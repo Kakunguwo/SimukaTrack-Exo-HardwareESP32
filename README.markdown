@@ -2,18 +2,25 @@
 
 ## Project Overview
 
-**SIMUKA-EXO** is a rehabilitation exoskeleton control system designed to assist patients in performing controlled movements for physical therapy, focusing on flexion/extension and adduction/abduction of joints. The system integrates an ESP32 microcontroller for real-time servo control and a React-based frontend for monitoring and managing therapy sessions. The project ensures patient safety through precise force control, smooth emergency stop behavior, and robust error handling in the user interface.
+**SIMUKA-EXO** is a rehabilitation exoskeleton control system designed to assist patients in performing controlled wrist movements for physical therapy, focusing on flexion/extension and adduction/abduction. The system integrates an ESP32 microcontroller for real-time servo control and a React-based frontend for monitoring and managing therapy sessions. It ensures patient safety through precise force control, smooth emergency stop behavior, and robust error handling in the user interface.
 
-The system addresses two critical issues:
-1. **Excessive Force**: Ensures forces during flexion/extension stay within a safe range (0.04 to 1.8 N), as derived from Euler-Lagrange equations.
-2. **Emergency Stop Safety**: Implements a smooth ramp-down to neutral position over 2 seconds to prevent abrupt movements that could harm the patient.
+The system addresses three critical issues:
+1. **Excessive Force**: Limits flexion/extension forces to a safe range (0.04 to 1.8 N), derived from Euler-Lagrange equations.
+2. **Emergency Stop Safety**: Implements a smooth ramp-down to the neutral position over 2 seconds to prevent abrupt movements.
 3. **Frontend Reliability**: Prevents crashes due to undefined data by providing fallback session summaries.
 
-This repository contains the ESP32 firmware (`ExoskeletonESP32.ino`) and the React frontend (`Session.tsx`), along with supporting configurations for MQTT communication and WebSocket integration.
+This repository contains the ESP32 firmware (`simukatrack_exo_code.ino`) and the React frontend (`Session.tsx`), along with configurations for MQTT communication and WebSocket integration.
+
+## Repository Access
+
+This repository is private. To gain access:
+1. Visit [https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32](https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32).
+2. Click "Request Access" and provide a brief justification for your request.
+3. The repository owner ([kakunguwo.ron@gmail.com](mailto:kakunguwo.ron@gmail.com)) will review and grant access to approved collaborators.
 
 ## Features
 
-- **Real-Time Control**: Uses a PID controller to drive MG996R servos for precise joint movement.
+- **Real-Time Control**: Uses a PID controller to drive MG996R servos for precise wrist movement.
 - **Safety Mechanisms**:
   - Limits forces to 0.04–1.8 N for flexion/extension and up to 1 N for adduction/abduction.
   - Smooth servo transition to neutral position (60°) during emergency stops.
@@ -25,7 +32,7 @@ This repository contains the ESP32 firmware (`ExoskeletonESP32.ino`) and the Rea
 ## System Architecture
 
 The system comprises:
-- **ESP32 Firmware** (`ExoskeletonESP32.ino`): Controls two MG996R servos for flexion/extension and adduction/abduction, computes dynamics using Euler-Lagrange equations, and communicates via MQTT.
+- **ESP32 Firmware** (`simukatrack_exo_code.ino`): Controls two MG996R servos for flexion/extension and adduction/abduction, computes dynamics using Euler-Lagrange equations, and communicates via MQTT.
 - **React Frontend** (`Session.tsx`): Provides a user interface for therapists to start/stop sessions, monitor live data, and view session summaries.
 - **MQTT Broker**: Facilitates communication between the ESP32 and frontend (e.g., `mqtt.eclipseprojects.io`).
 - **WebSocket Server**: Streams real-time data to the frontend using Socket.IO.
@@ -33,44 +40,43 @@ The system comprises:
 ## Key Computations
 
 ### 1. Force Calculation (Flexion/Extension)
-The force for flexion/extension (\( F_1 \)) is computed using the Euler-Lagrange-derived equation:
-\[
-F_1 = \frac{\tau_{\text{total}}}{l_1} = \frac{\tau_1 + \tau_g}{l_1}
-\]
-where:
-- \( \tau_1 \): Control torque from the PID controller (N·m).
-- \( \tau_g = m_1 \cdot g \cdot l_1 \cdot \sin(\theta_1) \): Gravity torque.
-- \( m_1 = 0.05057 \, \text{kg} \): Mass of the arched element.
-- \( l_1 = 0.075 \, \text{m} \): Length of the arched element.
-- \( g = 9.81 \, \text{m/s}^2 \): Gravitational acceleration.
-- \( \theta_1 \): Joint angle (radians).
+The force for flexion/extension ($F_1$) is computed using the Euler-Lagrange-derived equation:
 
-The safe force range is 0.04 to 1.8 N, corresponding to \( \tau_1 \in [0.003, 0.1] \, \text{N·m} \) and \( \theta_1 \in [-60^\circ, 60^\circ] \). For example, at \( \theta_1 = 60^\circ \):
-\[
-\tau_g = 0.05057 \cdot 9.81 \cdot 0.075 \cdot \sin(60^\circ) \approx 0.003284617 \, \text{N·m}
-\]
-\[
-F_1 = \frac{\tau_1 + 0.003284617}{0.075}
-\]
-To keep \( F_1 \leq 1.8 \, \text{N} \), \( \tau_1 \leq 0.1 \, \text{N·m} \), enforced by `TORQUE_LIMIT_FLEX = 0.1` and `FORCE_LIMIT_FLEX = 1.8`.
+$$ F_1 = \frac{\tau_{\text{total}}}{l_1} = \frac{\tau_1 + \tau_g}{l_1} $$
+
+where:
+- $\tau_1$: Control torque from the PID controller (N·m).
+- $\tau_g = m_1 \cdot g \cdot l_1 \cdot \sin(\theta_1)$: Gravity torque.
+- $m_1 = 0.05057 \, \text{kg}$: Mass of the arched element.
+- $l_1 = 0.075 \, \text{m}$: Length of the arched element.
+- $g = 9.81 \, \text{m/s}^2$: Gravitational acceleration.
+- $\theta_1$: Joint angle (radians).
+
+The safe force range is 0.04 to 1.8 N, corresponding to $\tau_1 \in [0.003, 0.1] \, \text{N·m}$ and $\theta_1 \in [-60^\circ, 60^\circ]$. For example, at $\theta_1 = 60^\circ$:
+
+$$ \tau_g = 0.05057 \cdot 9.81 \cdot 0.075 \cdot \sin(60^\circ) \approx 0.003284617 \, \text{N·m} $$
+
+$$ F_1 = \frac{\tau_1 + 0.003284617}{0.075} $$
+
+To keep $F_1 \leq 1.8 \, \text{N}$, $\tau_1 \leq 0.1 \, \text{N·m}$, enforced by `TORQUE_LIMIT_FLEX = 0.1` and `FORCE_LIMIT_FLEX = 1.8`.
 
 ### 2. Emergency Stop Ramp-Down
 During an emergency stop, servos ramp to the neutral position (60°) over 2 seconds using linear interpolation:
 - Steps: 100 (20 ms each).
-- Step size: \( \text{step} = \frac{\text{SERVO_NEUTRAL} - \text{current_angle}}{\text{steps}} \).
-- Example: From 120° to 60°, step size = \( \frac{60 - 120}{100} = -0.6^\circ/\text{step} \).
+- Step size: $\text{step} = \frac{\text{SERVO_NEUTRAL} - \text{current_angle}}{\text{steps}}$.
+- Example: From 120° to 60°, step size = $\frac{60 - 120}{100} = -0.6^\circ/\text{step}$.
 
 This ensures smooth transitions, preventing patient injury.
 
 ### 3. PID Control
 The PID controller computes torque as:
-\[
-\tau = K_p \cdot e + K_i \cdot \int e \, dt + K_d \cdot \frac{de}{dt}
-\]
+
+$$ \tau = K_p \cdot e + K_i \cdot \int e \, dt + K_d \cdot \frac{de}{dt} $$
+
 where:
-- \( e = \text{desired_angle} - \text{actual_angle} \).
-- \( K_p = 0.6 \), \( K_i = 0.05 \), \( K_d = 0.1 \).
-- Torque is constrained to `[-TORQUE_LIMIT_FLEX, TORQUE_LIMIT_FLEX]` (0.1 N·m) for flexion/extension and `[-TORQUE_LIMIT_ABD, TORQUE_LIMIT_ABD]` (0.065 N·m) for adduction/abduction.
+- $e = \text{desired_angle} - \text{actual_angle}$.
+- $K_p = 0.6$, $K_i = 0.05$, $K_d = 0.1$.
+- Torque is constrained to $[- \text{TORQUE_LIMIT_FLEX}, \text{TORQUE_LIMIT_FLEX}]$ (0.1 N·m) for flexion/extension and $[- \text{TORQUE_LIMIT_ABD}, \text{TORQUE_LIMIT_ABD}]$ (0.065 N·m) for adduction/abduction.
 
 ## Prerequisites
 
@@ -104,13 +110,16 @@ where:
 ## Installation
 
 ### 1. ESP32 Firmware
-1. Clone the repository:
+1. Request access to the private repository:
+   - Visit [https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32](https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32).
+   - Follow the access request instructions.
+2. Clone the repository after gaining access:
    ```bash
    git clone https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32.git
    cd SimukaTrack-Exo-HardwareESP32
    ```
-2. Open `simukatrack_exo_code.ino` in the Arduino IDE.
-3. Install required libraries via the Arduino Library Manager:
+3. Open `simukatrack_exo_code.ino` in the Arduino IDE.
+4. Install required libraries via the Arduino Library Manager:
    - `ESP32Servo`
    - `PubSubClient`
    - `ArduinoJson`
@@ -118,13 +127,13 @@ where:
    - `WiFi`
    - `WiFiUdp`
    - `ArduinoOTA`
-4. Update WiFi and MQTT settings in `simukatrack_exo_code.ino`:
+5. Update WiFi and MQTT settings in `simukatrack_exo_code.ino`:
    ```cpp
    const char* ssid = "your-wifi-ssid";
    const char* password = "your-wifi-password";
    const char* mqtt_server = "your-mqtt-broker";
    ```
-5. Connect the ESP32 to your computer and upload the firmware.
+6. Connect the ESP32 to your computer and upload the firmware.
 
 ### 2. Frontend
 1. Navigate to the frontend directory:
@@ -158,7 +167,7 @@ where:
 ## Usage
 
 1. **Start the System**:
-   - Power on the ESP32; it will connect to WiFi and the MQTT broker.
+   - Power on the ESP32; it connects to WiFi and the MQTT broker.
    - The ESP32 calibrates servos to the neutral position (60°) on startup.
    - Launch the frontend application in a browser.
 
@@ -295,12 +304,13 @@ if (liveData && liveData.angleHistory.length > 0) {
 
 ## Contributing
 
-Contributions are welcome! Please:
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/your-feature`).
-3. Commit changes (`git commit -m 'Add your feature'`).
-4. Push to the branch (`git push origin feature/your-feature`).
-5. Open a pull request.
+Contributions are welcome! To contribute:
+1. Request access to the repository by emailing [kakunguwo.ron@gmail.com](mailto:kakunguwo.ron@gmail.com).
+2. Fork the repository after gaining access.
+3. Create a feature branch (`git checkout -b feature/your-feature`).
+4. Commit changes (`git commit -m 'Add your feature'`).
+5. Push to the branch (`git push origin feature/your-feature`).
+6. Open a pull request.
 
 ## License
 
@@ -308,6 +318,6 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## Contact
 
-For questions or support, contact [kakunguwo.ron@gmail.com] or open an issue on GitHub.
+For questions or support, contact [kakunguwo.ron@gmail.com](mailto:kakunguwo.ron@gmail.com) or open an issue on GitHub.
 
-Portfolio: [ronniekakunguwo.vercel.app]
+Portfolio: [ronniekakunguwo.vercel.app](https://ronniekakunguwo.vercel.app)
