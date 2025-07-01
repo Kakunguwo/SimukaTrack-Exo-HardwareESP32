@@ -11,13 +11,6 @@ The system addresses three critical issues:
 
 This repository contains the ESP32 firmware (`simukatrack_exo_code.ino`) and the React frontend (`Session.tsx`), along with configurations for MQTT communication and WebSocket integration.
 
-## Repository Access
-
-This repository is private. To gain access:
-1. Visit [https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32](https://github.com/Kakunguwo/SimukaTrack-Exo-HardwareESP32).
-2. Click "Request Access" and provide a brief justification for your request.
-3. The repository owner ([kakunguwo.ron@gmail.com](mailto:kakunguwo.ron@gmail.com)) will review and grant access to approved collaborators.
-
 ## Features
 
 - **Real-Time Control**: Uses a PID controller to drive MG996R servos for precise wrist movement.
