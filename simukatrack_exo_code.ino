@@ -8,13 +8,11 @@
 #include <math.h>
 
 // WiFi credentials
-const char* ssid = "TECNO SPARK 10 Pro";
-const char* password = "kronicles";
+const char* ssid = "wifi_name";
+const char* password = "******";
 
 // MQTT configuration
-const char* mqtt_server = "mqtt.eclipseprojects.io";
-// const char* mqtt_server = "172.22.176.1";
-// const char* mqtt_server = " 192.168.138.242"; // wireless connection
+const char* mqtt_server = "your mqtt broker";
 const int mqtt_port = 1883;
 const char* mqtt_user = "";
 const char* mqtt_password = "";
